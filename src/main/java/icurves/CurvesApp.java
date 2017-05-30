@@ -1,5 +1,6 @@
 package icurves;
 
+import icurves.gn.GNDescription;
 import icurves.guifx.SettingsController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -39,6 +40,9 @@ public class CurvesApp extends Application {
     }
 
     public static void main(String args[]) {
+
+        //GNDescription.from("", "a-b, b-c, b-d, c-e");
+
         Configurator.initialize("default", CurvesApp.class.getResource("/icurves/log4j2.xml").toExternalForm());
         launch(args);
     }

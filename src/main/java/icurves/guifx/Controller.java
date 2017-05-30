@@ -56,6 +56,9 @@ public class Controller {
     @FXML
     private TextField fieldInput;
 
+    @FXML
+    private TextField fieldEdges;
+
 //    @FXML
 //    private TextArea areaInfo;
 
