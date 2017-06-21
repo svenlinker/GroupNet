@@ -8,6 +8,7 @@ import icurves.diagram.DiagramCreator;
 import icurves.graph.EulerDualNode;
 import icurves.graph.MED;
 import icurves.util.Examples;
+import icurves.util.NestedToAtomic;
 import javafx.application.Platform;
 import javafx.collections.MapChangeListener;
 import javafx.concurrent.Task;
@@ -300,18 +301,23 @@ public class Controller {
 
             Platform.runLater(renderer::clearRenderer);
 
-            // else do Hamiltonian
-            newCreator = new DiagramCreator(settings);
 
-            newCreator.getCurveToContour().addListener((MapChangeListener<? super AbstractCurve, ? super Curve>) change -> {
-                if (change.wasAdded()) {
-                    Curve c = change.getValueAdded();
+            // TODO: for each diagram we need to create an offset
 
-                    renderer.addContour(c);
-                }
+            NestedToAtomic.decompose(description.getInformalDescription()).forEach(desc -> {
+                // else do Hamiltonian
+                newCreator = new DiagramCreator(settings);
+
+                newCreator.getCurveToContour().addListener((MapChangeListener<? super AbstractCurve, ? super Curve>) change -> {
+                    if (change.wasAdded()) {
+                        Curve c = change.getValueAdded();
+
+                        renderer.addContour(c);
+                    }
+                });
+
+                newCreator.createDiagram(Description.from(desc));
             });
-
-            newCreator.createDiagram(description);
 
             generationTime = System.nanoTime() - startTime;
 
