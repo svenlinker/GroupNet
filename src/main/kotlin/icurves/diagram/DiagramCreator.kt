@@ -84,10 +84,26 @@ class DiagramCreator(val settings: SettingsController) {
 
             curveToContour[data.addedCurve] = curve
 
-            if (i < 3) {
-                // this is not entirely correct for say missing regions
-                // a ab b ac c
-                abstractRegions.addAll(data.newZones)
+            when (i) {
+
+                // we only have new zones here
+                0 -> {
+                    abstractRegions.addAll(data.newZones)
+                }
+
+                // we split 1 zone
+                1 -> {
+                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve)))
+                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[0].addedCurveData.addedCurve)))
+                }
+
+                // we split 4 zones
+                2 -> {
+                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve)))
+                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[0].addedCurveData.addedCurve)))
+                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[1].addedCurveData.addedCurve)))
+                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[0].addedCurveData.addedCurve, rSteps[1].addedCurveData.addedCurve)))
+                }
             }
         }
 
