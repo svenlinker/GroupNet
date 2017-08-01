@@ -27,7 +27,7 @@ data class RecompositionData(
      */
     fun isNested() = splitZones.size == 1
 
-    fun isSinglePiercing() = splitZones.size == 2
+    fun isMaybeSinglePiercing() = splitZones.size == 2
 
     fun isMaybeDoublePiercing() = splitZones.size == 4
 

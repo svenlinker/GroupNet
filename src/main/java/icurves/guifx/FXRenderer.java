@@ -47,7 +47,7 @@ public class FXRenderer extends Pane {
         getChildren().addAll(rootShadedZones, rootSceneGraph, canvas);
 
         // these values are adapted from "How should we use colour in ED" Andrew Blake, et al
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 15; i++) {
             colors.add(Color.hsb(((i+1))*32,
                     (i == 1 || i == 2) ? 0.26 : 0.55,
                     (i == 1 || i == 2) ? 0.88 : 0.92));

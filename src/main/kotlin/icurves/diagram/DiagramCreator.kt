@@ -88,6 +88,8 @@ class DiagramCreator(val settings: SettingsController) {
 
                 // we only have new zones here
                 0 -> {
+                    // TODO: this is not present why?
+                    //abstractRegions.add(AbstractBasicRegion.OUTSIDE)
                     abstractRegions.addAll(data.newZones)
                 }
 
@@ -135,7 +137,16 @@ class DiagramCreator(val settings: SettingsController) {
         createBasicRegions()
 
         if (data.isMaybeDoublePiercing()) {
-            val piercingData = PiercingData(data.splitZones.map { abRegionToBasicRegion[it]!! }, basicRegions)
+            val piercingData = PiercingData(4, data.splitZones.map { abRegionToBasicRegion[it]!! }, basicRegions)
+            if (piercingData.isPiercing()) {
+                curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
+
+                abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
+            }
+        } else if (data.isMaybeSinglePiercing()) {
+            println("Single")
+
+            val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it]!! }, basicRegions)
             if (piercingData.isPiercing()) {
                 curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
 
@@ -143,12 +154,18 @@ class DiagramCreator(val settings: SettingsController) {
             }
         }
 
+
+
         if (curve == null) {
             createMED()
 
             val cycle = modifiedDual.computeCycle(data.splitZones) ?: throw RuntimeException("Bug: Failed to find cycle")
 
             curve = PathCurve(data.addedCurve, cycle.path)
+
+            if (cycle.nodes.size == 2) {
+                curve = embedSinglePiercing(data.addedCurve, cycle.nodes.map { it.zone })
+            }
 
             if (cycle.nodes.size == 4) {
                 curve = embedDoublePiercing(data.addedCurve, cycle.nodes.map { it.zone })
@@ -168,8 +185,18 @@ class DiagramCreator(val settings: SettingsController) {
         return curve
     }
 
+    private fun embedSinglePiercing(abstractCurve: AbstractCurve, regions: List<BasicRegion>): Curve {
+        val piercingData = PiercingData(2, regions, basicRegions)
+
+        if (!piercingData.isPiercing()) {
+            throw RuntimeException("Bug: not 1-piercing")
+        }
+
+        return CircleCurve(abstractCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
+    }
+
     private fun embedDoublePiercing(abstractCurve: AbstractCurve, regions: List<BasicRegion>): Curve {
-        val piercingData = PiercingData(regions, basicRegions)
+        val piercingData = PiercingData(4, regions, basicRegions)
 
         if (!piercingData.isPiercing()) {
             throw RuntimeException("Bug: not 2-piercing")
