@@ -144,14 +144,29 @@ class DiagramCreator(val settings: SettingsController) {
                 abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
             }
         } else if (data.isMaybeSinglePiercing()) {
-            println("Single")
-
             val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it]!! }, basicRegions)
             if (piercingData.isPiercing()) {
                 curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
 
                 abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
             }
+        } else if (data.isNested()) {
+
+            // this doesn't work when two nested piercings in the same br
+            // possibly because the br polygon has a hole in it, like a doughnut
+            // and so the center is not computed properly?
+
+            // when nested we only have 1 basic region in "split"
+            val br = abRegionToBasicRegion[data.splitZones[0]]!!
+
+            val center = br.center
+
+            // minus signed distance because the point lies inside the polygon
+            val maxRadius = -br.getPolygonShape().boundary().signedDistance(center.x, center.y)
+
+            curve = CircleCurve(data.addedCurve, center.x, center.y, maxRadius / 2)
+
+            abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
         }
 
 
