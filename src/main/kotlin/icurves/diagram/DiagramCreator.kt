@@ -61,9 +61,6 @@ class DiagramCreator(val settings: SettingsController) {
 
     lateinit var modifiedDual: MED
 
-    val debugPoints = ArrayList<Point2D>()
-    val debugShapes = ArrayList<Shape>()
-
     fun createDiagram(description: Description) {
 
         // all we need is decomposition; recomposition is almost no-op
@@ -144,6 +141,8 @@ class DiagramCreator(val settings: SettingsController) {
                 abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
             }
         } else if (data.isMaybeSinglePiercing()) {
+            // this will fail if 1 side of piercing is the OUTSIDE region
+
             val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it]!! }, basicRegions)
             if (piercingData.isPiercing()) {
                 curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)

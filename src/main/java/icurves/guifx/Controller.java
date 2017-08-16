@@ -8,13 +8,14 @@ import icurves.diagram.DiagramCreator;
 import icurves.graph.EulerDualNode;
 import icurves.graph.MED;
 import icurves.util.Examples;
-import icurves.util.NestedToAtomic;
+import icurves.util.MultiToSimple;
 import javafx.application.Platform;
 import javafx.collections.MapChangeListener;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -33,7 +34,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Almas Baimagambetov (AlmasB) (almaslvl@gmail.com)
@@ -279,18 +282,15 @@ public class Controller {
 
         private long generationTime;
 
-        private DiagramCreator newCreator;
-
         private double fieldSize = 4000.0;
+
+        private Map<DiagramCreator, Point2D> offsets = new HashMap<>();
 
         public CreateDiagramTask(Description description) {
             this.description = description;
 
             renderer.setPrefSize(fieldSize, fieldSize);
             renderer.setCanvasSize(fieldSize, fieldSize);
-
-            //renderer.setScaleX(0.15);
-            //renderer.setScaleY(0.15);
 
             renderer.clearSceneGraph();
         }
@@ -301,18 +301,17 @@ public class Controller {
 
             Platform.runLater(renderer::clearRenderer);
 
+            MultiToSimple.decompose(description.getInformalDescription()).forEach(desc -> {
 
-            // TODO: for each diagram we need to create an offset
+                DiagramCreator newCreator = new DiagramCreator(settings);
 
-            NestedToAtomic.decompose(description.getInformalDescription()).forEach(desc -> {
-                // else do Hamiltonian
-                newCreator = new DiagramCreator(settings);
+                offsets.put(newCreator, new Point2D(offsets.size() * 6000, 0));
 
                 newCreator.getCurveToContour().addListener((MapChangeListener<? super AbstractCurve, ? super Curve>) change -> {
                     if (change.wasAdded()) {
                         Curve c = change.getValueAdded();
 
-                        renderer.addContour(c);
+                        renderer.addContour(c, offsets.get(newCreator));
                     }
                 });
 
@@ -339,89 +338,57 @@ public class Controller {
                 renderer.rootSceneGraph.getChildren().addAll(point, coord);
             });
 
+            // TODO: this may be useful for later
+//            settings.getDebugShapes().forEach(shape -> {
+//                System.out.println("adding debug info");
+//                shape.setFill(Color.RED);
+//                shape.setStrokeWidth(5);
+//                shape.setStroke(Color.BLUE);
+//
+//                renderer.rootSceneGraph.getChildren().addAll(shape);
+//            });
+
             settings.debugPoints.clear();
 
-            // draw any debug points
-            newCreator.getDebugPoints().forEach(p -> {
-                Circle point = new Circle(p.getX(), p.getY(), 10, Color.LIGHTSKYBLUE);
+            offsets.forEach((creator, offset) -> {
 
-                Text coord = new Text((int) p.getX() + "," + (int) p.getY());
-                coord.setTranslateX(p.getX());
-                coord.setTranslateY(p.getY() - 10);
+                if (settings.showMED()) {
 
-                renderer.rootSceneGraph.getChildren().addAll(point, coord);
-            });
+                    MED modifiedDual = creator.getModifiedDual();
 
-            newCreator.getDebugShapes().forEach(shape -> {
-                System.out.println("adding debug info");
-                shape.setFill(Color.RED);
-                shape.setStrokeWidth(5);
-                shape.setStroke(Color.BLUE);
+                    // draw MED nodes
+                    modifiedDual.getNodes().stream().map(EulerDualNode::getPoint).forEach(p -> {
+                        Circle point = new Circle(p.getX() + offset.getX(), p.getY() + offset.getY(), 10, Color.RED);
 
-                renderer.rootSceneGraph.getChildren().addAll(shape);
-            });
+                        Text coord = new Text((int) p.getX() + "," + (int) p.getY());
+                        coord.setTranslateX(p.getX() + offset.getX());
+                        coord.setTranslateY(p.getY() - 10 + offset.getY());
 
-            if (settings.showMED()) {
+                        renderer.rootSceneGraph.getChildren().addAll(point, coord);
+                    });
 
-                MED modifiedDual = newCreator.getModifiedDual();
-
-                // draw MED nodes
-                modifiedDual.getNodes().stream().map(EulerDualNode::getPoint).forEach(p -> {
-                    Circle point = new Circle(p.getX(), p.getY(), 10, Color.RED);
-
-                    Text coord = new Text((int) p.getX() + "," + (int) p.getY());
-                    coord.setTranslateX(p.getX());
-                    coord.setTranslateY(p.getY() - 10);
-
-                    renderer.rootSceneGraph.getChildren().addAll(point, coord);
-                });
-
-                // draw MED edges
-                modifiedDual.getEdges().forEach(e -> {
-                    e.getCurve().setStroke(Color.RED);
-                    e.getCurve().setStrokeWidth(6);
-                    renderer.rootSceneGraph.getChildren().addAll(e.getCurve());
+                    // draw MED edges
+                    modifiedDual.getEdges().forEach(e -> {
+                        e.getCurve().setStroke(Color.RED);
+                        e.getCurve().setStrokeWidth(6);
+                        renderer.rootSceneGraph.getChildren().addAll(e.getCurve());
 
 //                    e.getCurve().setOnMouseClicked(event -> {
 //                        e.getCurve().setStroke(Color.YELLOW);
 //                    });
+                    });
+                }
+
+                // add shaded zones
+                creator.getShadedRegions().forEach(zone -> {
+                    Shape shape = zone.getShape();
+                    shape.setTranslateX(offset.getX());
+                    shape.setTranslateY(offset.getY());
+                    shape.setFill(Color.GRAY);
+
+                    renderer.rootShadedZones.getChildren().addAll(shape);
                 });
-            }
-
-            // add shaded zones
-            newCreator.getShadedRegions().forEach(zone -> {
-                Shape shape = zone.getShape();
-                shape.setFill(Color.GRAY);
-
-                renderer.rootShadedZones.getChildren().addAll(shape);
             });
-
-
-//            try {
-//                long startTime = System.nanoTime();
-//
-//                renderer.draw(diagram, cbEulerDual.isSelected());
-//
-//                // highlighting
-//                renderer.getShadedZones().forEach(zone -> {
-//                    zone.setOnMouseEntered(e -> {
-//                        ((Shape) zone).setFill(Color.YELLOW);
-//                        areaInfo.setText(((ConcreteZone) zone.getUserData()).toDebugString());
-//                    });
-//
-//                    zone.setOnMouseExited(e -> {
-//                        ((Shape) zone).setFill(Color.TRANSPARENT);
-//                    });
-//                });
-//
-//                long estimatedTime = System.nanoTime() - startTime;
-//
-//                System.out.printf("Diagram creation took: %.3f sec\n", generationTime / 1000000000.0);
-//                System.out.printf("Diagram drawing took:  %.3f sec\n", estimatedTime / 1000000000.0);
-//            } catch (Exception e) {
-//                showError(e);
-//            }
-
 
             progressDialog.hide();
         }
@@ -431,21 +398,9 @@ public class Controller {
             progressDialog.hide();
 
             Throwable error = getException();
-            if (error != null) {
-                showError(error);
 
-                newCreator.getDebugShapes().forEach(shape -> {
-                    System.out.println("adding debug info");
-                    shape.setFill(Color.RED);
-                    shape.setStrokeWidth(5);
-                    shape.setStroke(Color.BLUE);
-
-                    renderer.rootSceneGraph.getChildren().addAll(shape);
-                });
-            }
-            else
-                showError(new RuntimeException("Unresolved error. Exception returned null"));
-
+            showError(error != null ? error : new RuntimeException("Unresolved error. Exception returned null"));
+            
             succeeded();
         }
     }

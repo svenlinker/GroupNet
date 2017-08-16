@@ -64,17 +64,19 @@ public class FXRenderer extends Pane {
         rootShadedZones.getChildren().clear();
     }
 
-    public void addContour(Curve curve) {
+    public void addContour(Curve curve, Point2D offset) {
         Shape s = curve.getShape();
         s.setStrokeWidth(16);
         s.setStroke(colors.get(colorIndex++));
         s.setFill(null);
+        s.setTranslateX(offset.getX());
+        s.setTranslateY(offset.getY());
 
         Text label = new Text(curve.toString());
         label.setFont(Font.font(72));
         label.setFill(s.getStroke());
-        label.setTranslateX(s.getLayoutBounds().getMaxX());
-        label.setTranslateY(s.getLayoutBounds().getMinY());
+        label.setTranslateX(s.getLayoutBounds().getMaxX() + offset.getX());
+        label.setTranslateY(s.getLayoutBounds().getMinY() + offset.getY());
 
         Platform.runLater(() -> rootSceneGraph.getChildren().addAll(s, label));
     }

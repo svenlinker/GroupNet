@@ -33,6 +33,8 @@ object Examples {
         add("Edge Route", "a b c ab ac bc bd bf abc abd abf bcd bcf bdf abcd abdf bcdf")
         add("Edge Route 1", "a b c d ab ac ad bc bd be cd abc abd abe acd bcd bce bde abcd abce abde")
         add("Edge Route 2", "a b c d ab ac ad ae af bc bd cd abc abd acd ace acf adf bcd abcd acde adef")
+
+        add("Multidiagram 1", "a b c abc ab ac bc d e de df")
     }
 
     private fun add(name: String, description: String) {

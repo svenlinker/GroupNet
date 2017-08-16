@@ -5,6 +5,7 @@ import icurves.description.AbstractBasicRegion
 import icurves.description.AbstractCurve
 import icurves.util.Polylabel
 import javafx.geometry.Point2D
+import javafx.scene.paint.Color
 import javafx.scene.shape.Rectangle
 import javafx.scene.shape.Shape
 import math.geom2d.polygon.Polygon2D
@@ -66,6 +67,10 @@ class BasicRegion(
     private fun computeVisualCentre(): Point2D {
         if (polygonShape == null)
             polygonShape = getPolygonShape()
+
+        if (polygonShape!!.toString().contains("Multi")) {
+            // multipolygon (with a hole) so center compute fails
+        }
 
         return Polylabel.findCenter(polygonShape!!)
     }

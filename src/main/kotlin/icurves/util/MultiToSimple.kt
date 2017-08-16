@@ -7,7 +7,7 @@ import java.util.*
  *
  * @author Almas Baimagambetov (almaslvl@gmail.com)
  */
-class NestedToAtomic {
+class MultiToSimple {
 
     companion object {
 
