@@ -21,7 +21,7 @@ public class SettingsController {
 
     public Map<Object, Object> globalMap = new HashMap<>();
 
-    public List<Point2D> debugPoints = new ArrayList<>();
+    public static List<Point2D> debugPoints = new ArrayList<>();
 
     public Polygon2D geomBBox = new SimplePolygon2D(new math.geom2d.Point2D(-10000.0, -10000.0),
             new math.geom2d.Point2D(10000.0, -10000.0),

@@ -400,7 +400,7 @@ public class Controller {
             Throwable error = getException();
 
             showError(error != null ? error : new RuntimeException("Unresolved error. Exception returned null"));
-            
+
             succeeded();
         }
     }

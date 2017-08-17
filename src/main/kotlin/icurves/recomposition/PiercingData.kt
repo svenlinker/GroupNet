@@ -2,6 +2,7 @@ package icurves.recomposition
 
 import icurves.CurvesApp
 import icurves.diagram.BasicRegion
+import icurves.guifx.SettingsController
 import javafx.geometry.Point2D
 
 /**
@@ -32,16 +33,17 @@ class PiercingData(numRegions: Int, cluster: List<BasicRegion>, basicRegions: Li
                     // we search for vertices present along 2 region bounds (collisions)
                     .filter { it.value.size == numRegions }
                     .map { Point2D(it.key.getX(), it.key.getY()) }
+                    // remove vertices that occur in other basic region bounds
+                    // to filter out the corner vertices
+                    .minus(
+                            basicRegions.minus(cluster)
+                                    .map { it.getPolygonShape().vertices() }
+                                    .flatten()
+                                    .groupBy { it.asInt }
+                                    .map { Point2D(it.key.getX(), it.key.getY()) }
+                    )
 
-            val sum = points
-                    .foldRight(Point2D.ZERO, { p, acc -> p.add(acc) })
-                    .multiply(1.0 / points.size)
-
-            // in some cases sum itself is a good point ...
-            // but we choose one that is actually present along the 2 regions' bounds
-
-            center = points.sortedBy { it.distance(sum) }
-                    .firstOrNull()
+            center = points.firstOrNull()
         }
 
         if (center != null) {

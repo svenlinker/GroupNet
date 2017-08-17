@@ -19,6 +19,7 @@ object Examples {
 
         add("Single Piercing 1", "a b c ab ac af ag bc be cd abc abe abf abg acd acf afg bcd bce abcd abce abcf abfg ah abh")
         add("Single Piercing 2", "a b c ab ac af bc be cg ch abc abe abf abj bcd bch cgh abcd abcj")
+        add("Single Piercing 3", "a b c ab ac bc bd be bf cg ch ci abc bcd bce bcf bcg bch bci")
 
         add("Double Piercing", "a b c ab ac af ag bc be cd abc abe abf abg acd acf afg bcd bce abcd abce abcf abfg")
         add("Double Piercing 1", "a b c d ab ac ad ae bc bd cd abc abd acd ace bcd abcd acde")
@@ -29,6 +30,7 @@ object Examples {
 
         add("Combined All 1", "a b c ab ac af bc be cg ch ck co abc abe abf abj ack aco bcd bch bck bco cgh cko abcd abcj abco acko bcko")
         add("Combined All 2", "a b c ab ac ad af bc be cd cg ch abc abe abf abj acd bcd bch cgh abcd abci abcj")
+        add("Combined All 3", "a b c j ab ac aj ao bc bd be bf cg ch ci abc abj aco ajo bcd bce bcf bcg bch bci")
 
         add("Edge Route", "a b c ab ac bc bd bf abc abd abf bcd bcf bdf abcd abdf bcdf")
         add("Edge Route 1", "a b c d ab ac ad bc bd be cd abc abd abe acd bcd bce bde abcd abce abde")
