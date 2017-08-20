@@ -57,6 +57,8 @@ class DiagramCreator(val settings: SettingsController) {
      */
     private lateinit var basicRegions: List<BasicRegion>
 
+    private lateinit var outsideBR: BasicRegion
+
     val shadedRegions = ArrayList<BasicRegion>()
 
     lateinit var modifiedDual: MED
@@ -104,6 +106,9 @@ class DiagramCreator(val settings: SettingsController) {
                     abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[0].addedCurveData.addedCurve, rSteps[1].addedCurveData.addedCurve)))
                 }
             }
+
+            //println(abstractRegions)
+            //curveToContour.values.forEach { println(it.toDebugString()) }
         }
 
         if (settings.showMED()) {
@@ -134,18 +139,22 @@ class DiagramCreator(val settings: SettingsController) {
         createBasicRegions()
 
         if (data.isMaybeDoublePiercing()) {
-            val piercingData = PiercingData(4, data.splitZones.map { abRegionToBasicRegion[it]!! }, basicRegions)
+
+            // we don't have a map between abstract OUTSIDE and br OUTSIDE, hence ?:
+            val piercingData = PiercingData(4, data.splitZones.map { abRegionToBasicRegion[it] ?: outsideBR }, basicRegions)
             if (piercingData.isPiercing()) {
                 curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
+                //curve = CircleCurve(data.addedCurve, 2250.0, 3000.0, piercingData.radius / 2)
 
                 abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
             }
         } else if (data.isMaybeSinglePiercing()) {
-            // this will fail if 1 side of piercing is the OUTSIDE region
 
-            val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it]!! }, basicRegions)
+            // we don't have a map between abstract OUTSIDE and br OUTSIDE, hence ?:
+            val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it] ?: outsideBR }, basicRegions)
             if (piercingData.isPiercing()) {
                 curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
+                //curve = CircleCurve(data.addedCurve, 3000.0, 1500.0, piercingData.radius / 2)
 
                 abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
             }
@@ -168,8 +177,6 @@ class DiagramCreator(val settings: SettingsController) {
             abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
         }
 
-
-
         if (curve == null) {
             createMED()
 
@@ -177,12 +184,13 @@ class DiagramCreator(val settings: SettingsController) {
 
             curve = PathCurve(data.addedCurve, cycle.path)
 
-            if (cycle.nodes.size == 2) {
-                curve = embedSinglePiercing(data.addedCurve, cycle.nodes.map { it.zone })
+            if (cycle.lengthUnique() == 2) {
+                curve = embedSinglePiercing(data.addedCurve, cycle.nodesUnique().map { it.zone })
             }
 
-            if (cycle.nodes.size == 4) {
-                curve = embedDoublePiercing(data.addedCurve, cycle.nodes.map { it.zone })
+            // here a 3node cycle may have been upgraded to 4node
+            if (cycle.lengthUnique() == 4) {
+                curve = embedDoublePiercing(data.addedCurve, cycle.nodesUnique().map { it.zone })
             }
 
             if (settings.useSmooth() && curve !is CircleCurve) {
@@ -294,6 +302,8 @@ class DiagramCreator(val settings: SettingsController) {
             abRegionToBasicRegion[it] = br
             return@map br
         }
+
+        outsideBR = BasicRegion(AbstractBasicRegion.OUTSIDE, curveToContour)
     }
 
     /**
