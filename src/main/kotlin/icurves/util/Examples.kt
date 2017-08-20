@@ -28,6 +28,7 @@ object Examples {
         add("Double Piercing 4", "a b d e ac ad ae bc bd cd de")
 
         add("Combined Piercing 1", "a b c ab ac af bc be cg ch co abc abe abf abj aco bcd bch bco cgh abcd abcj abco")
+        add("Combined Piercing 2", "a b c d e f k ab ac ak bc bd bu ce ef abc abu bcu abcg abcl abcu abcgl")
 
         add("Combined All 1", "a b c ab ac af bc be cg ch ck co abc abe abf abj ack aco bcd bch bck bco cgh cko abcd abcj abco acko bcko")
         add("Combined All 2", "a b c ab ac ad af bc be cd cg ch abc abe abf abj acd bcd bch cgh abcd abci abcj")

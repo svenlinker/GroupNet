@@ -1,5 +1,6 @@
 package icurves.recomposition
 
+import icurves.description.AbstractBasicRegion
 import icurves.diagram.BasicRegion
 import icurves.diagram.DiagramCreator
 import icurves.guifx.SettingsController
@@ -33,7 +34,7 @@ class PiercingData(numRegions: Int, private val cluster: List<BasicRegion>, priv
 
         } else { // if 2
 
-            val points = cluster.map { it.getPolygonShape().vertices() }
+            val map = cluster.map { it.getPolygonShape().vertices() }
                     .flatten()
                     .groupBy({ it.asInt })
                     // we search for vertices present along 2 region bounds (collisions)
@@ -48,8 +49,13 @@ class PiercingData(numRegions: Int, private val cluster: List<BasicRegion>, priv
                                     .groupBy { it.asInt }
                                     .map { Point2D(it.key.getX(), it.key.getY()) }
                     )
+                    .groupBy { computeRadius(it) }
+                    .toSortedMap()
+
+            val points = map[map.lastKey()]!!.sortedByDescending { it.x }
+
                     // choose the one where we can fit largest circle
-                    .sortedByDescending { computeRadius(it) }
+                    //.sortedByDescending { if (cluster.any { it.abRegion == AbstractBasicRegion.OUTSIDE }) it.x else computeRadius(it) }
 
             center = points.firstOrNull()
         }
