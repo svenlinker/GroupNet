@@ -19,7 +19,7 @@ object Examples {
 
         add("Single Piercing 1", "a b c ab ac af ag bc be cd abc abe abf abg acd acf afg bcd bce abcd abce abcf abfg ah abh")
         add("Single Piercing 2", "a b c ab ac af bc be cg ch abc abe abf abj bcd bch cgh abcd abcj")
-        add("Single Piercing 3", "a b c ab ac bc bd be bf cg ch ci abc bcd bce bcf bcg bch bci")
+        add("Single Piercing 3", "a b c ab ac bc bd be bf bx cg ch ci abc bcd bce bcf bcg bch bci bfx")
 
         add("Double Piercing", "a b c ab ac af ag bc be cd abc abe abf abg acd acf afg bcd bce abcd abce abcf abfg")
         add("Double Piercing 1", "a b c d ab ac ad ae bc bd cd abc abd acd ace bcd abcd acde")
