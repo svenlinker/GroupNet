@@ -49,4 +49,8 @@ class CircleCurve(
     override fun computeShape() = Circle(centerX, centerY, getBigRadius())
 
     override fun computePolygon() = Converter.circleToPolygon(this)
+
+    override fun toDebugString(): String {
+        return "$this($centerX, $centerY, r=$radius)"
+    }
 }
