@@ -5,6 +5,7 @@ import icurves.diagram.BasicRegion
 import icurves.diagram.DiagramCreator
 import icurves.guifx.SettingsController
 import javafx.geometry.Point2D
+import math.geom2d.polygon.MultiPolygon2D
 
 /**
  *
@@ -59,12 +60,7 @@ class PiercingData(numRegions: Int, private val cluster: List<BasicRegion>, priv
         }
 
         if (center != null) {
-            radius = basicRegions
-                    .minus(cluster)
-                    .map { it.getPolygonShape().distance(center.x, center.y) }
-                    .sorted()
-                    // null occurs when we split a single curve?
-                    .firstOrNull() ?: DiagramCreator.BASE_CURVE_RADIUS * 2
+            radius = computeRadius(center)
         } else {
             radius = 0.0
         }
@@ -75,7 +71,18 @@ class PiercingData(numRegions: Int, private val cluster: List<BasicRegion>, priv
     private fun computeRadius(potentialCenter: Point2D): Double {
         return basicRegions
                 .minus(cluster)
-                .map { it.getPolygonShape().distance(potentialCenter.x, potentialCenter.y) }
+                .map {
+                    if (it.getPolygonShape() is MultiPolygon2D) {
+
+                        // check signed distance and also of the complement
+                        val dist1 = Math.abs(it.getPolygonShape().boundary().signedDistance(potentialCenter.x, potentialCenter.y))
+                        val dist2 = Math.abs(it.getPolygonShape().complement().boundary().signedDistance(potentialCenter.x, potentialCenter.y))
+
+                        Math.min(dist1, dist2)
+                    } else {
+                        it.getPolygonShape().distance(potentialCenter.x, potentialCenter.y)
+                    }
+                }
                 .sorted()
                 // null occurs when we split a single curve?
                 .firstOrNull() ?: DiagramCreator.BASE_CURVE_RADIUS * 2

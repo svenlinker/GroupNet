@@ -118,6 +118,7 @@ class DiagramCreator(val settings: SettingsController) {
         if (data.isMaybeDoublePiercing()) {
 
             // we don't have a map between abstract OUTSIDE and br OUTSIDE, hence ?:
+            // also, we don't add .plus(outsideBR) because there're other regions that bound
             val piercingData = PiercingData(4, data.splitZones.map { abRegionToBasicRegion[it] ?: outsideBR }, basicRegions)
             if (piercingData.isPiercing()) {
 
@@ -133,7 +134,7 @@ class DiagramCreator(val settings: SettingsController) {
         } else if (data.isMaybeSinglePiercing()) {
 
             // we don't have a map between abstract OUTSIDE and br OUTSIDE, hence ?:
-            val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it] ?: outsideBR }, basicRegions)
+            val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it] ?: outsideBR }, basicRegions.plus(outsideBR))
             if (piercingData.isPiercing()) {
 
                 curve = if (numCurvesSoFar() == 1) {
@@ -196,7 +197,7 @@ class DiagramCreator(val settings: SettingsController) {
     }
 
     private fun embedSinglePiercing(abstractCurve: AbstractCurve, regions: List<BasicRegion>): Curve {
-        val piercingData = PiercingData(2, regions, basicRegions)
+        val piercingData = PiercingData(2, regions, basicRegions.plus(outsideBR))
 
         if (!piercingData.isPiercing()) {
             throw RuntimeException("Bug: not 1-piercing")
