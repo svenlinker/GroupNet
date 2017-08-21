@@ -33,6 +33,7 @@ object Examples {
         add("Combined All 1", "a b c ab ac af bc be cg ch ck co abc abe abf abj ack aco bcd bch bck bco cgh cko abcd abcj abco acko bcko")
         add("Combined All 2", "a b c ab ac ad af bc be cd cg ch abc abe abf abj acd bcd bch cgh abcd abci abcj")
         add("Combined All 3", "a b c j ab ac aj ao bc bd be bf cg ch ci abc abj aco ajo bcd bce bcf bcg bch bci")
+        add("Combined All 4", "b c d f h j ab ac bc bd bf bj cf de dj fh hi abc acf bfg abcf")
 
         add("Edge Route", "a b c ab ac bc bd bf abc abd abf bcd bcf bdf abcd abdf bcdf")
         add("Edge Route 1", "a b c d ab ac ad bc bd be cd abc abd abe acd bcd bce bde abcd abce abde")

@@ -74,41 +74,18 @@ class DiagramCreator(val settings: SettingsController) {
 
             val curve = when (i) {
 
-                // 0..2 are base cases for 1..3 curves
-                0 -> CircleCurve(data.addedCurve, BASE_CURVE_RADIUS, BASE_CURVE_RADIUS, BASE_CURVE_RADIUS)
-                1 -> CircleCurve(data.addedCurve, BASE_CURVE_RADIUS * 2, BASE_CURVE_RADIUS, BASE_CURVE_RADIUS)
-                2 -> CircleCurve(data.addedCurve, BASE_CURVE_RADIUS * 1.5, BASE_CURVE_RADIUS * 2, BASE_CURVE_RADIUS)
+                // 0 is base case (single curve)
+                0 -> {
+                    // we only have new zones here, don't add Abstract OUTSIDE as it's a special case
+                    abstractRegions.addAll(data.newZones)
+
+                    CircleCurve(data.addedCurve, BASE_CURVE_RADIUS, BASE_CURVE_RADIUS, BASE_CURVE_RADIUS)
+                }
+
                 else -> embedCurve(data)
             }
 
             curveToContour[data.addedCurve] = curve
-
-            when (i) {
-
-                // we only have new zones here
-                0 -> {
-                    // TODO: this is not present why?
-                    //abstractRegions.add(AbstractBasicRegion.OUTSIDE)
-                    abstractRegions.addAll(data.newZones)
-                }
-
-                // we split 1 zone
-                1 -> {
-                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve)))
-                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[0].addedCurveData.addedCurve)))
-                }
-
-                // we split 4 zones
-                2 -> {
-                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve)))
-                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[0].addedCurveData.addedCurve)))
-                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[1].addedCurveData.addedCurve)))
-                    abstractRegions.add(AbstractBasicRegion(setOf(data.addedCurve, rSteps[0].addedCurveData.addedCurve, rSteps[1].addedCurveData.addedCurve)))
-                }
-            }
-
-            //println(abstractRegions)
-            //curveToContour.values.forEach { println(it.toDebugString()) }
         }
 
         if (settings.showMED()) {
@@ -143,8 +120,13 @@ class DiagramCreator(val settings: SettingsController) {
             // we don't have a map between abstract OUTSIDE and br OUTSIDE, hence ?:
             val piercingData = PiercingData(4, data.splitZones.map { abRegionToBasicRegion[it] ?: outsideBR }, basicRegions)
             if (piercingData.isPiercing()) {
-                curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
-                //curve = CircleCurve(data.addedCurve, 2250.0, 3000.0, piercingData.radius / 2)
+
+                curve = if (numCurvesSoFar() == 2) {
+                    // special: use slightly better position and size
+                    CircleCurve(data.addedCurve, BASE_CURVE_RADIUS * 1.5, BASE_CURVE_RADIUS * 2, BASE_CURVE_RADIUS)
+                } else {
+                    CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
+                }
 
                 abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
             }
@@ -153,8 +135,13 @@ class DiagramCreator(val settings: SettingsController) {
             // we don't have a map between abstract OUTSIDE and br OUTSIDE, hence ?:
             val piercingData = PiercingData(2, data.splitZones.map { abRegionToBasicRegion[it] ?: outsideBR }, basicRegions)
             if (piercingData.isPiercing()) {
-                curve = CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
-                //curve = CircleCurve(data.addedCurve, 3000.0, 1500.0, piercingData.radius / 2)
+
+                curve = if (numCurvesSoFar() == 1) {
+                    // special: use slightly better position and size
+                    CircleCurve(data.addedCurve, BASE_CURVE_RADIUS * 2, BASE_CURVE_RADIUS, BASE_CURVE_RADIUS)
+                } else {
+                    CircleCurve(data.addedCurve, piercingData.center!!.x, piercingData.center.y, piercingData.radius / 2)
+                }
 
                 abstractRegions.addAll(data.splitZones.map { it.moveInside(data.addedCurve) })
             }
@@ -165,7 +152,8 @@ class DiagramCreator(val settings: SettingsController) {
             // and so the center is not computed properly?
 
             // when nested we only have 1 basic region in "split"
-            val br = abRegionToBasicRegion[data.splitZones[0]]!!
+            // we don't have a map between abstract OUTSIDE and br OUTSIDE, hence ?:
+            val br = abRegionToBasicRegion[data.splitZones[0]] ?: outsideBR
 
             val center = br.center
 
@@ -188,7 +176,7 @@ class DiagramCreator(val settings: SettingsController) {
                 curve = embedSinglePiercing(data.addedCurve, cycle.nodesUnique().map { it.zone })
             }
 
-            // here a 3node cycle may have been upgraded to 4node
+            // here a 2node or 3node cycle may have been upgraded to 4node
             if (cycle.lengthUnique() == 4) {
                 curve = embedDoublePiercing(data.addedCurve, cycle.nodesUnique().map { it.zone })
             }
@@ -305,6 +293,8 @@ class DiagramCreator(val settings: SettingsController) {
 
         outsideBR = BasicRegion(AbstractBasicRegion.OUTSIDE, curveToContour)
     }
+
+    private fun numCurvesSoFar() = curveToContour.size
 
     /**
      * Needs to be generated every time because curves change basic regions.

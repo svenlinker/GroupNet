@@ -38,7 +38,10 @@ class PiercingData(numRegions: Int, private val cluster: List<BasicRegion>, priv
                     .flatten()
                     .groupBy({ it.asInt })
                     // we search for vertices present along 2 region bounds (collisions)
-                    .filter { it.value.size == numRegions }
+                    .filter { it.value.size >= numRegions }
+                    .filter { entry ->
+                        cluster.all { it.getPolygonShape().vertices().map { it.asInt }.any { it.x == entry.key.x && it.y == entry.key.y } }
+                    }
                     .map { Point2D(it.key.getX(), it.key.getY()) }
                     // remove vertices that occur in other basic region bounds
                     // to filter out the corner vertices
@@ -52,12 +55,7 @@ class PiercingData(numRegions: Int, private val cluster: List<BasicRegion>, priv
                     .groupBy { computeRadius(it) }
                     .toSortedMap()
 
-            val points = map[map.lastKey()]!!.sortedByDescending { it.x }
-
-                    // choose the one where we can fit largest circle
-                    //.sortedByDescending { if (cluster.any { it.abRegion == AbstractBasicRegion.OUTSIDE }) it.x else computeRadius(it) }
-
-            center = points.firstOrNull()
+            center = if (map.isEmpty()) null else map[map.lastKey()]!!.sortedByDescending { it.x }.firstOrNull()
         }
 
         if (center != null) {
@@ -65,6 +63,7 @@ class PiercingData(numRegions: Int, private val cluster: List<BasicRegion>, priv
                     .minus(cluster)
                     .map { it.getPolygonShape().distance(center.x, center.y) }
                     .sorted()
+                    // null occurs when we split a single curve?
                     .firstOrNull() ?: DiagramCreator.BASE_CURVE_RADIUS * 2
         } else {
             radius = 0.0
