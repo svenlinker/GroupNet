@@ -29,5 +29,7 @@ abstract class Curve(val abstractCurve: AbstractCurve) {
 
     abstract fun computeShape(): Shape
 
+    abstract fun toDebugString(): String
+
     override fun toString() = abstractCurve.toString()
 }

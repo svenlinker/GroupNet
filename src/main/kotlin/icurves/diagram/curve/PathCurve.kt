@@ -107,4 +107,8 @@ class PathCurve(abstractCurve: AbstractCurve,
         val y = Math.pow(1 - t, 3.0) * p1.y + 3 * t * Math.pow(1 - t, 2.0) * p2.y + 3 * t*t * (1 - t) * p3.y + t*t*t*p4.y
         return Point2D(x, y)
     }
+
+    override fun toDebugString(): String {
+        return "$this($path)"
+    }
 }

@@ -16,6 +16,13 @@ data class GraphCycle<V, E>(val nodes: List<V>, val edges: List<E>) {
 
     fun length() = nodes.size
 
+    /**
+     * Computes length - nodes that lie in the same basic region
+     */
+    fun lengthUnique() = nodesUnique().size
+
+    fun nodesUnique() = nodes.map { it as EulerDualNode }.distinctBy { it.zone.toString() }
+
     fun contains(node: V): Boolean {
         for (n in nodes) {
             if (n.toString() == node.toString()) {

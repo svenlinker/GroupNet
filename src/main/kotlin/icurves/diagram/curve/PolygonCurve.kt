@@ -42,4 +42,8 @@ class PolygonCurve(
     }
 
     override fun computePolygon() = Converter.toPolygon2D(polygonFX)
+
+    override fun toDebugString(): String {
+        return "$this($polygonFX)"
+    }
 }
